@@ -1,54 +1,29 @@
-import os
-import socket
-import threading
+from cryptography.fernet import Fernet
+# import socket
+# IP=socket.gethostbyname(socket.gethostname)
+# PORT=1234
+# ADDR=(IP,PORT)
+# SIZE=1024
+# FORMAT="utf-8"
+#
+# c=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+# c.connect(ADDR)
+# print("[CONNECTED]")
 
-IP=socket.gethostbyname(socket.gethostname())
-PORT=1234
-ADDR=(IP,PORT)
-SIZE=2028
-FORMAT="utf-8"
-SERVER_DATA_PATH="server_data"
+key=Fernet.generate_key()
+with open('key.key','wb') as filekey:
+    filekey.write(key)
+fernet=Fernet(key)
 
-def main():
-    client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    client.connect(ADDR)
-    while True:
-        data=client.recv(SIZE).decode(FORMAT)
-        cmd,msg=data.split("@")
-        if cmd=="OK":
-            print(f"{msg}")
-        elif cmd=="DISCONNECTED":
-            print(f"{msg}")
-            break
-        i=input("> ")
-        i=i.split(" ")
-        cmd = i[0]
+with open('test.mp4','rb') as file:
+    original=file.read()
 
-        if cmd=="HELP":
-            print("sending")
-            client.send(cmd.encode(FORMAT))
-        elif cmd=="LOGOUT":
-            client.send(cmd.encode(FORMAT))
-            break
-        elif cmd=="LIST":
-            client.send(cmd.encode(FORMAT))
-        elif cmd=="UPLOAD":
-            path=i[1]
-            with open(f"{path}", "r") as f:
-                text=f.read()
-            filename=path.split("/")[-1]
-            send_data=f"{cmd}@{filename}@{text}"
-            print(send_data)
-            client.send(send_data.encode(FORMAT))
-            
-        elif cmd=="DELETE":
-            client.send(f"{cmd}@{i[1]}".encode(FORMAT))
-            
-    print("[DISCONNECTED FROM THE SERVER]")
-    client.close()
+original_c=fernet.encrypt(original)
+with open('test_e.mp4','wb') as file:
+    file.write(original_c)
 
 
 
-
-if __name__=="__main__":
-    main()
+# msg=c.recv(SIZE).decode(FORMAT)
+# print(f"[SERVER] {msg}")
+#
